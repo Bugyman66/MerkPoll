@@ -1,0 +1,1 @@
+// Vote controller logic
