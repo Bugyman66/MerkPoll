@@ -1,16 +1,12 @@
-const authController = require('../controllers/authController');
 const express = require('express');
 const router = express.Router();
 
-// Example auth route
+// Basic auth route for testing
 router.get('/test', (req, res) => {
   res.json({ message: 'Auth route working!' });
 });
 
-// Example: Send OTP to voter email
-router.post('/send-otp', authController.sendOtp);
-
-// Example: Verify OTP and return voter wallet
-router.post('/verify-otp', authController.verifyOtp);
+// Note: Wallet-based authentication is handled in admin routes
+// No email/OTP authentication needed for simplified flow
 
 module.exports = router;

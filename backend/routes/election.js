@@ -1,11 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const electionController = require('../controllers/electionController');
 
-// Election routes
-
-// Example election route
-router.get('/test', (req, res) => {
-  res.json({ message: 'Election route working!' });
-});
+// Public election routes (for voters)
+router.get('/', electionController.getPublicElections);
+router.get('/:id', electionController.getElectionDetails);
 
 module.exports = router;
