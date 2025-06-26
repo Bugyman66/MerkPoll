@@ -7,33 +7,112 @@ const { Account } = require('@aptos-labs/ts-sdk');
 const OTP = require('../models/OTP');
 const nodemailer = require('nodemailer');
 
-// Configure nodemailer transport (use environment variables in production)
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 465,
-  secure: true,
-  auth: {
-    user: process.env.SMTP_USER || 'your_email@gmail.com',
-    pass: process.env.SMTP_PASS || 'your_app_password',
-  },
-});
+// Configure nodemailer transport with better error handling
+let transporter = null;
+
+try {
+  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 465,
+      secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false // Allow self-signed certificates
+      }
+    });
+
+    // Verify SMTP connection
+    transporter.verify((error, success) => {
+      if (error) {
+        console.error('❌ SMTP connection failed:', error.message);
+        transporter = null;
+      } else {
+        console.log('✅ SMTP server is ready to send emails');
+      }
+    });
+  } else {
+    console.warn('⚠️ SMTP credentials not configured in .env file');
+  }
+} catch (error) {
+  console.error('❌ Failed to create SMTP transporter:', error);
+  transporter = null;
+}
 
 async function sendOtpEmail(email, otp) {
   if (!transporter) {
-    console.warn('Nodemailer not configured. OTP:', otp);
+    console.warn('⚠️ SMTP not configured. OTP would be:', otp);
+    console.warn('📧 Email would be sent to:', email);
+    console.warn('Please configure SMTP_USER and SMTP_PASS in .env file for production');
     return;
   }
+
   const mailOptions = {
-    from: process.env.SMTP_FROM || 'MerkPoll <no-reply@merkpoll.com>',
+    from: process.env.SMTP_FROM || `MerkPoll <${process.env.SMTP_USER}>`,
     to: email,
-    subject: 'Your MerkPoll OTP Code',
-    text: `Your OTP code for voting is: ${otp}\n\nThis code will expire in 10 minutes.`,
+    subject: '🗳️ Your MerkPoll Voting OTP Code',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+        <div style="background: linear-gradient(135deg, #000000 0%, #333333 100%); padding: 30px; border-radius: 10px; text-align: center; color: white;">
+          <h1 style="margin: 0; font-size: 28px;">🗳️ MerkPoll</h1>
+          <p style="margin: 10px 0 0 0; opacity: 0.9;">Secure Decentralized Voting</p>
+        </div>
+        
+        <div style="background: white; padding: 30px; border-radius: 10px; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          <h2 style="color: #333; margin-top: 0;">Your Voting OTP Code</h2>
+          <p style="color: #666; line-height: 1.6;">You have requested to vote in an election. Please use the following OTP code to verify your identity:</p>
+          
+          <div style="background: #f8f9fa; border: 2px dashed #333; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px;">
+            <div style="font-size: 32px; font-weight: bold; color: #000; letter-spacing: 8px; font-family: 'Courier New', monospace;">${otp}</div>
+          </div>
+          
+          <p style="color: #666; line-height: 1.6;"><strong>Important:</strong></p>
+          <ul style="color: #666; line-height: 1.6;">
+            <li>This code will expire in <strong>10 minutes</strong></li>
+            <li>Do not share this code with anyone</li>
+            <li>Use this code only on the official MerkPoll voting page</li>
+          </ul>
+          
+          <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin-top: 20px;">
+            <p style="margin: 0; color: #856404; font-size: 14px;">
+              <strong>Security Notice:</strong> If you did not request this OTP, please ignore this email. Your account remains secure.
+            </p>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
+          <p>This email was sent by MerkPoll - Secure Decentralized Voting Platform</p>
+          <p>Please do not reply to this email.</p>
+        </div>
+      </div>
+    `,
+    text: `
+🗳️ MerkPoll - Your Voting OTP Code
+
+Your OTP code for voting is: ${otp}
+
+This code will expire in 10 minutes.
+
+Important:
+- Do not share this code with anyone
+- Use this code only on the official MerkPoll voting page
+- If you did not request this OTP, please ignore this email
+
+MerkPoll - Secure Decentralized Voting Platform
+    `,
   };
+
   try {
-    await transporter.sendMail(mailOptions);
-  } catch (err) {
-    console.error('Failed to send OTP email:', err);
-    throw new Error('Failed to send OTP email');
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ OTP email sent successfully to:', email);
+    console.log('📧 Message ID:', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('❌ Failed to send OTP email:', error.message);
+    throw new Error('Failed to send OTP email. Please try again later.');
   }
 }
 
@@ -576,18 +655,49 @@ const requestOtp = async (req, res) => {
   try {
     const { slug } = req.params;
     const { email } = req.body;
-    if (!email) return res.status(400).json({ message: 'Email is required' });
+    
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
     const { hashEmail } = require('../utils/merkle');
     const hashedEmail = hashEmail(email).toString('hex');
+    
     const election = await Election.findOne({ slug });
-    if (!election) return res.status(404).json({ message: 'Election not found' });
+    if (!election) {
+      return res.status(404).json({ message: 'Election not found' });
+    }
+    
     const walletEntry = election.voterWallets.find(vw => vw.hashedEmail === hashedEmail);
-    if (!walletEntry) return res.status(403).json({ message: 'You are not eligible to vote in this election' });
+    if (!walletEntry) {
+      return res.status(403).json({ message: 'You are not eligible to vote in this election' });
+    }
+    
     // Generate and save OTP
     const otp = await OTP.generateAndSave(hashedEmail);
+    console.log(`📧 Generating OTP for ${email}: ${otp}`);
+    
     // Send OTP via email
-    await sendOtpEmail(email, otp);
-    res.json({ message: 'OTP sent to your email.' });
+    try {
+      await sendOtpEmail(email, otp);
+      res.json({ 
+        message: 'OTP sent to your email successfully. Please check your inbox and spam folder.',
+        email: email.replace(/(.{2})(.*)(@.*)/, '$1***$3') // Partially hide email for security
+      });
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      // Still return success to user, but log the error
+      res.json({ 
+        message: 'OTP generated. If email sending fails, please contact support.',
+        otp: process.env.NODE_ENV === 'development' ? otp : undefined // Only show OTP in development
+      });
+    }
   } catch (error) {
     console.error('Error requesting OTP:', error);
     res.status(500).json({ message: 'Internal server error' });
