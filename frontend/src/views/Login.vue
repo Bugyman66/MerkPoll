@@ -1,7 +1,7 @@
 <template>
   <div class="login-page">
     <div class="login-container">
-      <div class="login-card">
+      <div class="glass-container login-card">
         <div class="login-header">
           <h1 class="login-title">Welcome to MerkPoll</h1>
           <p class="login-subtitle">Secure voter authentication</p>
@@ -22,7 +22,7 @@
                 v-model="email"
                 type="email"
                 required
-                class="form-input"
+                class="glass-input"
                 placeholder="your-email@example.com"
               />
             </div>
@@ -30,7 +30,7 @@
             <button
               type="submit"
               :disabled="loading"
-              class="btn btn-primary btn-full"
+              class="glass-btn primary large"
             >
               {{ loading ? 'Sending...' : 'Send OTP' }}
             </button>
@@ -53,7 +53,7 @@
                 type="text"
                 maxlength="6"
                 required
-                class="form-input otp-input"
+                class="glass-input otp-input"
                 placeholder="000000"
               />
             </div>
@@ -61,7 +61,7 @@
             <button
               type="submit"
               :disabled="loading"
-              class="btn btn-primary btn-full"
+              class="glass-btn primary large"
             >
               {{ loading ? 'Verifying...' : 'Verify & Login' }}
             </button>
@@ -69,13 +69,13 @@
           
           <button
             @click="resendOtp"
-            class="btn btn-text btn-full"
+            class="glass-btn outline large"
           >
             Resend OTP
           </button>
         </div>
 
-        <div v-if="error" class="error-message">
+        <div v-if="error" class="glass-card error-message">
           {{ error }}
         </div>
 
@@ -85,13 +85,13 @@
             <p class="admin-text">Election Administrator?</p>
             <button
               @click="showAdminLogin = !showAdminLogin"
-              class="btn btn-outline"
+              class="glass-btn outline"
             >
               Admin Login
             </button>
           </div>
           
-          <div v-if="showAdminLogin" class="admin-form">
+          <div v-if="showAdminLogin" class="glass-card admin-form">
             <div class="form-group">
               <label class="form-label">
                 Wallet Address
@@ -99,14 +99,14 @@
               <input
                 v-model="adminWallet"
                 type="text"
-                class="form-input"
+                class="glass-input"
                 placeholder="0x..."
               />
             </div>
             <button
               @click="adminLogin"
               :disabled="loading"
-              class="btn btn-secondary btn-full"
+              class="glass-btn secondary large"
             >
               Connect Wallet & Sign
             </button>
@@ -187,7 +187,6 @@ const adminLogin = async () => {
 <style scoped>
 .login-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
   padding: 3rem 1rem;
   display: flex;
   align-items: center;
@@ -200,11 +199,7 @@ const adminLogin = async () => {
 }
 
 .login-card {
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
-  border: 1px solid #e5e7eb;
+  padding: 2.5rem;
 }
 
 .login-header {
@@ -215,12 +210,11 @@ const adminLogin = async () => {
 .login-title {
   font-size: 1.875rem;
   font-weight: 700;
-  color: #111827;
   margin-bottom: 0.5rem;
 }
 
 .login-subtitle {
-  color: #6b7280;
+  opacity: 0.8;
 }
 
 .login-form {
@@ -230,19 +224,19 @@ const adminLogin = async () => {
 .form-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
   margin-bottom: 0.5rem;
 }
 
 .form-description {
-  color: #6b7280;
+  opacity: 0.8;
   margin-bottom: 1.5rem;
+  line-height: 1.6;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .form-group {
@@ -253,102 +247,53 @@ const adminLogin = async () => {
 .form-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
   margin-bottom: 0.5rem;
+  opacity: 0.9;
 }
 
-.form-input {
+.glass-input {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
+  padding: 0.875rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.75rem;
+  color: white;
   font-size: 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
-.form-input:focus {
+.glass-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.glass-input:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
 }
 
 .otp-input {
   text-align: center;
   font-size: 1.5rem;
   letter-spacing: 0.25rem;
-}
-
-.btn {
-  padding: 0.75rem 1rem;
-  border-radius: 0.375rem;
-  font-weight: 500;
-  text-align: center;
-  transition: all 0.2s;
-  border: none;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background-color: #2563eb;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: #1d4ed8;
-}
-
-.btn-secondary {
-  background-color: #10b981;
-  color: white;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: #059669;
-}
-
-.btn-outline {
-  border: 1px solid #2563eb;
-  color: #2563eb;
-  background: transparent;
-}
-
-.btn-outline:hover {
-  background-color: #2563eb;
-  color: white;
-}
-
-.btn-text {
-  background: none;
-  color: #2563eb;
-}
-
-.btn-text:hover {
-  color: #1d4ed8;
-}
-
-.btn-full {
-  width: 100%;
+  font-weight: 600;
 }
 
 .error-message {
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
-  padding: 0.75rem;
-  border-radius: 0.375rem;
+  background: rgba(255, 107, 107, 0.2);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  color: #ff6b6b;
+  padding: 1rem;
   margin-top: 1rem;
+  backdrop-filter: blur(10px);
 }
 
 .admin-section {
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
   padding-top: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 .admin-header {
@@ -357,7 +302,7 @@ const adminLogin = async () => {
 }
 
 .admin-text {
-  color: #6b7280;
+  opacity: 0.8;
   margin-bottom: 1rem;
 }
 
@@ -366,5 +311,41 @@ const adminLogin = async () => {
   flex-direction: column;
   gap: 1rem;
   margin-top: 1rem;
+  padding: 1.5rem;
+}
+
+.secondary {
+  background: rgba(81, 207, 102, 0.2);
+  border: 1px solid rgba(81, 207, 102, 0.3);
+  color: #51cf66;
+}
+
+.secondary:hover:not(:disabled) {
+  background: rgba(81, 207, 102, 0.3);
+  box-shadow: 0 8px 25px rgba(81, 207, 102, 0.3);
+  transform: translateY(-2px);
+}
+
+.large {
+  width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .login-page {
+    padding: 2rem 1rem;
+  }
+
+  .login-card {
+    padding: 2rem;
+  }
+
+  .login-title {
+    font-size: 1.5rem;
+  }
+
+  .form-title {
+    font-size: 1.125rem;
+  }
 }
 </style>

@@ -1,32 +1,84 @@
 const Election = require('../models/Election');
 const Voter = require('../models/Voter');
+const Vote = require('../models/Vote');
 const { buildMerkleTree, hashEmail } = require('../utils/merkle');
 const crypto = require('crypto');
+const { Account } = require('@aptos-labs/ts-sdk');
+const OTP = require('../models/OTP');
+const nodemailer = require('nodemailer');
 
-// Create a new election
+// Configure nodemailer transport (use environment variables in production)
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 465,
+  secure: true,
+  auth: {
+    user: process.env.SMTP_USER || 'your_email@gmail.com',
+    pass: process.env.SMTP_PASS || 'your_app_password',
+  },
+});
+
+async function sendOtpEmail(email, otp) {
+  if (!transporter) {
+    console.warn('Nodemailer not configured. OTP:', otp);
+    return;
+  }
+  const mailOptions = {
+    from: process.env.SMTP_FROM || 'MerkPoll <no-reply@merkpoll.com>',
+    to: email,
+    subject: 'Your MerkPoll OTP Code',
+    text: `Your OTP code for voting is: ${otp}\n\nThis code will expire in 10 minutes.`,
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (err) {
+    console.error('Failed to send OTP email:', err);
+    throw new Error('Failed to send OTP email');
+  }
+}
+
+// Create a new election with multiple positions
 const createElection = async (req, res) => {
   try {
-    const { name, description, deadline, position, candidates, voterEmails, adminWallet } = req.body;
+    const { 
+      title, 
+      description, 
+      organization,
+      deadline, 
+      startDate,
+      positions, 
+      voterEmails, 
+      allowAbstain,
+      requireAllPositions,
+      resultsVisible 
+    } = req.body;
 
     // Validate required fields
-    if (!name || !deadline || !candidates || !voterEmails || !adminWallet) {
+    if (!title || !deadline || !positions || !voterEmails) {
       return res.status(400).json({ 
-        message: 'Missing required fields: name, deadline, candidates, voterEmails, adminWallet' 
+        message: 'Missing required fields: title, deadline, positions, voterEmails' 
       });
     }
 
-    // Validate candidates
-    if (!Array.isArray(candidates) || candidates.length === 0) {
-      return res.status(400).json({ message: 'At least one candidate is required' });
+    // Validate positions structure
+    if (!Array.isArray(positions) || positions.length === 0) {
+      return res.status(400).json({ message: 'At least one position is required' });
+    }
+
+    // Validate each position has candidates
+    for (let i = 0; i < positions.length; i++) {
+      const position = positions[i];
+      if (!position.title || !position.candidates || !Array.isArray(position.candidates) || position.candidates.length === 0) {
+        return res.status(400).json({ 
+          message: `Position ${i + 1} must have a title and at least one candidate` 
+        });
+      }
     }
 
     // Validate voter emails
     if (!Array.isArray(voterEmails) || voterEmails.length === 0) {
       return res.status(400).json({ message: 'At least one voter email is required' });
     }
-
-    // Generate unique election ID
-    const electionId = crypto.randomUUID();
 
     // Hash voter emails for privacy
     const hashedEmails = voterEmails.map(email => hashEmail(email));
@@ -35,42 +87,105 @@ const createElection = async (req, res) => {
     const merkleTree = buildMerkleTree(hashedEmails);
     const merkleRoot = merkleTree.getRoot().toString('hex');
 
-    // Create election document
-    const election = new Election({
-      id: electionId,
-      name,
-      description,
-      deadline: new Date(deadline),
-      position,
-      candidates: candidates.map((candidate, index) => ({
-        id: index,
+    // Structure positions with enhanced candidate data
+    const structuredPositions = positions.map(position => ({
+      title: position.title,
+      description: position.description || '',
+      maxSelections: position.maxSelections || 1,
+      candidates: position.candidates.map(candidate => ({
         name: candidate.name,
         description: candidate.description || '',
+        imageUrl: candidate.imageUrl || '',
+        party: candidate.party || '',
+        qualifications: candidate.qualifications || '',
         voteCount: 0
       })),
-      adminWallet,
+      totalVotes: 0
+    }));
+
+    // Create voter list for tracking
+    const voterList = voterEmails.map(email => ({
+      email: email,
+      hasVoted: false
+    }));
+
+    // Generate a unique slug for the election
+    function generateSlug(title) {
+      const base = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const random = Math.random().toString(36).substring(2, 8);
+      return `${base}-${random}`;
+    }
+    const slug = generateSlug(title);
+
+    // For each hashed email, generate a wallet and store mapping
+    const voterWallets = hashedEmails.map(hashedEmail => {
+      const account = Account.generate();
+      return {
+        hashedEmail: hashedEmail.toString('hex'),
+        walletAddress: account.accountAddress.toString(),
+        // Optionally, you could store the private key securely if needed for recovery
+        // privateKey: account.signingKeyHex
+      };
+    });
+
+    // Create election document
+    const election = new Election({
+      title,
+      description,
+      organization: organization || '',
+      deadline: new Date(deadline),
+      startDate: startDate ? new Date(startDate) : new Date(),
+      positions: structuredPositions,
+      voterList,
+      allowAbstain: allowAbstain !== false,
+      requireAllPositions: requireAllPositions === true,
+      resultsVisible: resultsVisible === true,
       merkleRoot,
       status: 'active',
-      voterCount: voterEmails.length,
-      createdAt: new Date()
+      createdBy: req.user.id,
+      slug,
+      voterWallets
     });
 
     await election.save();
 
-    // Store voter information with Merkle proofs
+    console.log(`✅ Election created: ${election.title} with ${positions.length} positions`);
+
     const voterPromises = voterEmails.map(async (email, index) => {
-      const hashedEmail = hashedEmails[index];
-      const merkleProof = merkleTree.getProof(hashedEmail);
+      const hashedEmailHex = hashedEmails[index].toString('hex');
+      const merkleProof = merkleTree.getProof(hashedEmails[index]);
+      const walletEntry = voterWallets.find(vw => vw.hashedEmail === hashedEmailHex);
 
-      const voter = new Voter({
-        email: email.toLowerCase(),
-        hashedEmail,
-        electionId,
-        merkleProof: merkleProof.map(p => p.toString('hex')),
-        hasVoted: false
-      });
+      try {
+        // Check if voter already exists for this election
+        const existingVoter = await Voter.findOne({
+          emailHash: hashedEmailHex,
+          election: election._id
+        });
 
-      return voter.save();
+        if (existingVoter) {
+          console.log(`Voter with email hash ${hashedEmailHex} already exists for this election`);
+          return existingVoter;
+        }
+
+        const voter = new Voter({
+          emailHash: hashedEmailHex,
+          wallet: walletEntry.walletAddress,
+          election: election._id,
+          otpVerified: false,
+          hasVoted: false
+          // Optionally: merkleProof: merkleProof.map(p => p.toString('hex'))
+        });
+
+        return await voter.save();
+      } catch (error) {
+        if (error.code === 11000) {
+          // Duplicate key error - voter already exists
+          console.log(`Voter with email hash ${hashedEmailHex} already exists, skipping...`);
+          return await Voter.findOne({ emailHash: hashedEmailHex, election: election._id });
+        }
+        throw error;
+      }
     });
 
     await Promise.all(voterPromises);
@@ -78,15 +193,25 @@ const createElection = async (req, res) => {
     res.status(201).json({
       message: 'Election created successfully',
       election: {
-        id: election.id,
-        name: election.name,
+        id: election._id,
+        title: election.title,
         description: election.description,
+        organization: election.organization,
         deadline: election.deadline,
-        position: election.position,
-        candidates: election.candidates,
+        startDate: election.startDate,
+        positions: election.positions.map(pos => ({
+          id: pos._id,
+          title: pos.title,
+          description: pos.description,
+          maxSelections: pos.maxSelections,
+          candidateCount: pos.candidates.length
+        })),
+        voterCount: election.voterList.length,
         status: election.status,
-        voterCount: election.voterCount,
-        merkleRoot: election.merkleRoot
+        allowAbstain: election.allowAbstain,
+        requireAllPositions: election.requireAllPositions,
+        resultsVisible: election.resultsVisible,
+        slug: election.slug
       }
     });
 
@@ -125,7 +250,7 @@ const getAdminElections = async (req, res) => {
 const getElectionDetails = async (req, res) => {
   try {
     const { id } = req.params;
-    const election = await Election.findOne({ id });
+    const election = await Election.findById(id);
 
     if (!election) {
       return res.status(404).json({ message: 'Election not found' });
@@ -145,8 +270,8 @@ const updateElection = async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
 
-    const election = await Election.findOneAndUpdate(
-      { id },
+    const election = await Election.findByIdAndUpdate(
+      id,
       { $set: updates },
       { new: true }
     );
@@ -195,7 +320,7 @@ const uploadVoters = async (req, res) => {
       return res.status(400).json({ message: 'Voter emails are required' });
     }
 
-    const election = await Election.findOne({ id });
+    const election = await Election.findById(id);
     if (!election) {
       return res.status(404).json({ message: 'Election not found' });
     }
@@ -225,18 +350,40 @@ const uploadVoters = async (req, res) => {
 
     // Add new voters with proofs
     const voterPromises = voterEmails.map(async (email, index) => {
-      const hashedEmail = hashedEmails[index];
-      const merkleProof = merkleTree.getProof(hashedEmail);
+      const hashedEmailHex = hashedEmails[index].toString('hex');
+      const merkleProof = merkleTree.getProof(hashedEmails[index]);
+      const walletEntry = election.voterWallets.find(vw => vw.hashedEmail === hashedEmailHex);
 
-      const voter = new Voter({
-        email: email.toLowerCase(),
-        hashedEmail,
-        electionId: id,
-        merkleProof: merkleProof.map(p => p.toString('hex')),
-        hasVoted: false
-      });
+      try {
+        // Check if voter already exists for this election
+        const existingVoter = await Voter.findOne({
+          emailHash: hashedEmailHex,
+          election: election._id
+        });
 
-      return voter.save();
+        if (existingVoter) {
+          console.log(`Voter with email hash ${hashedEmailHex} already exists for this election`);
+          return existingVoter;
+        }
+
+        const voter = new Voter({
+          emailHash: hashedEmailHex,
+          wallet: walletEntry.walletAddress,
+          election: election._id,
+          otpVerified: false,
+          hasVoted: false
+          // Optionally: merkleProof: merkleProof.map(p => p.toString('hex'))
+        });
+
+        return await voter.save();
+      } catch (error) {
+        if (error.code === 11000) {
+          // Duplicate key error - voter already exists
+          console.log(`Voter with email hash ${hashedEmailHex} already exists, skipping...`);
+          return await Voter.findOne({ emailHash: hashedEmailHex, election: election._id });
+        }
+        throw error;
+      }
     });
 
     await Promise.all(voterPromises);
@@ -273,7 +420,7 @@ const getElectionResults = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const election = await Election.findOne({ id });
+    const election = await Election.findById(id);
     if (!election) {
       return res.status(404).json({ message: 'Election not found' });
     }
@@ -304,7 +451,7 @@ const getElectionAnalytics = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const election = await Election.findOne({ id });
+    const election = await Election.findById(id);
     if (!election) {
       return res.status(404).json({ message: 'Election not found' });
     }
@@ -358,6 +505,116 @@ const getPublicElections = async (req, res) => {
   }
 };
 
+// Get election by slug (for voting page)
+const getElectionBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const election = await Election.findOne({ slug });
+    if (!election) {
+      return res.status(404).json({ message: 'Election not found' });
+    }
+    res.json({
+      id: election._id,
+      title: election.title,
+      description: election.description,
+      organization: election.organization,
+      deadline: election.deadline,
+      startDate: election.startDate,
+      positions: election.positions.map(position => ({
+        id: position._id,
+        title: position.title,
+        description: position.description,
+        maxSelections: position.maxSelections,
+        candidates: position.candidates.map(candidate => ({
+          id: candidate._id,
+          name: candidate.name,
+          description: candidate.description,
+          imageUrl: candidate.imageUrl,
+          party: candidate.party,
+          qualifications: candidate.qualifications
+        }))
+      })),
+      allowAbstain: election.allowAbstain,
+      requireAllPositions: election.requireAllPositions,
+      resultsVisible: election.resultsVisible,
+      merkleRoot: election.merkleRoot,
+      slug: election.slug
+    });
+  } catch (error) {
+    console.error('Error fetching election by slug:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// Get voter's wallet address by election slug and email
+const getVoterWalletByEmail = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+    const { hashEmail } = require('../utils/merkle');
+    const hashedEmail = hashEmail(email).toString('hex');
+    const election = await Election.findOne({ slug });
+    if (!election) {
+      return res.status(404).json({ message: 'Election not found' });
+    }
+    const walletEntry = election.voterWallets.find(vw => vw.hashedEmail === hashedEmail);
+    if (!walletEntry) {
+      return res.status(403).json({ message: 'You are not eligible to vote in this election' });
+    }
+    res.json({ eligible: true });
+  } catch (error) {
+    console.error('Error checking voter eligibility:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// Request OTP for voting
+const requestOtp = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+    const { hashEmail } = require('../utils/merkle');
+    const hashedEmail = hashEmail(email).toString('hex');
+    const election = await Election.findOne({ slug });
+    if (!election) return res.status(404).json({ message: 'Election not found' });
+    const walletEntry = election.voterWallets.find(vw => vw.hashedEmail === hashedEmail);
+    if (!walletEntry) return res.status(403).json({ message: 'You are not eligible to vote in this election' });
+    // Generate and save OTP
+    const otp = await OTP.generateAndSave(hashedEmail);
+    // Send OTP via email
+    await sendOtpEmail(email, otp);
+    res.json({ message: 'OTP sent to your email.' });
+  } catch (error) {
+    console.error('Error requesting OTP:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// Verify OTP for voting
+const verifyOtp = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ message: 'Email and OTP are required' });
+    const { hashEmail } = require('../utils/merkle');
+    const hashedEmail = hashEmail(email).toString('hex');
+    const election = await Election.findOne({ slug });
+    if (!election) return res.status(404).json({ message: 'Election not found' });
+    const walletEntry = election.voterWallets.find(vw => vw.hashedEmail === hashedEmail);
+    if (!walletEntry) return res.status(403).json({ message: 'You are not eligible to vote in this election' });
+    const valid = await OTP.verifyOtp(hashedEmail, otp);
+    if (!valid) return res.status(403).json({ message: 'Invalid or expired OTP' });
+    res.json({ eligible: true });
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 module.exports = {
   createElection,
   getAdminElections,
@@ -368,5 +625,9 @@ module.exports = {
   getElectionVoters,
   getElectionResults,
   getElectionAnalytics,
-  getPublicElections
+  getPublicElections,
+  getElectionBySlug,
+  getVoterWalletByEmail,
+  requestOtp,
+  verifyOtp
 };

@@ -1,6 +1,7 @@
 <template>
   <div class="home page-layout">
     <!-- Navigation -->
+  
     <nav class="navbar">
       <div class="nav-container">
         <div class="nav-content">

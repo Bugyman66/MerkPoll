@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:5000/api'
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+const API_BASE_URL = `${API_BASE}/api`;
 
 export const useElectionStore = defineStore('election', {
   state: () => ({
@@ -34,6 +35,22 @@ export const useElectionStore = defineStore('election', {
       
       try {
         const response = await axios.get(`${API_BASE_URL}/elections/${id}`)
+        this.currentElection = response.data
+        return response.data
+      } catch (error) {
+        this.error = error.response?.data?.message || 'Failed to fetch election'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async fetchElectionBySlug(slug) {
+      this.loading = true
+      this.error = null
+      
+      try {
+        const response = await axios.get(`${API_BASE_URL}/elections/slug/${slug}`)
         this.currentElection = response.data
         return response.data
       } catch (error) {

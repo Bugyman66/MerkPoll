@@ -1,7 +1,7 @@
 <template>
   <div class="login-page">
     <div class="login-container">
-      <div class="login-card">
+      <div class="glass-container login-card">
         <div class="login-header">
           <h1 class="login-title">Admin Access</h1>
           <p class="login-subtitle">Connect your wallet to manage elections</p>
@@ -18,13 +18,13 @@
             <h2>Connect Petra Wallet</h2>
             <p>To create and manage elections, please connect your Aptos wallet.</p>
             
-            <div v-if="authStore.error" class="error-message">
+            <div v-if="authStore.error" class="glass-card error-message">
               {{ authStore.error }}
             </div>
             
             <button 
               @click="connectWallet" 
-              class="btn btn-primary btn-large"
+              class="glass-btn primary large"
               :disabled="authStore.loading"
             >
               {{ authStore.loading ? 'Connecting...' : 'Connect Wallet' }}
@@ -51,10 +51,10 @@
             <p>Successfully connected to {{ authStore.truncatedAddress }}</p>
             
             <div class="action-buttons">
-              <router-link to="/admin" class="btn btn-primary btn-large">
+              <router-link to="/admin" class="glass-btn primary large">
                 Go to Admin Panel
               </router-link>
-              <button @click="disconnectWallet" class="btn btn-outline">
+              <button @click="disconnectWallet" class="glass-btn outline">
                 Disconnect
               </button>
             </div>
@@ -98,7 +98,6 @@ const disconnectWallet = async () => {
 <style scoped>
 .login-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -111,9 +110,6 @@ const disconnectWallet = async () => {
 }
 
 .login-card {
-  background: white;
-  border-radius: 1rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   padding: 3rem;
   text-align: center;
 }
@@ -125,12 +121,11 @@ const disconnectWallet = async () => {
 .login-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #111827;
   margin-bottom: 0.5rem;
 }
 
 .login-subtitle {
-  color: #6b7280;
+  opacity: 0.8;
   font-size: 1rem;
 }
 
@@ -146,34 +141,34 @@ const disconnectWallet = async () => {
 }
 
 .wallet-icon, .success-icon {
-  color: #6b7280;
+  opacity: 0.7;
   margin-bottom: 0.5rem;
 }
 
 .success-icon {
-  color: #059669;
+  color: #51cf66;
 }
 
 .connect-wallet h2, .wallet-connected h2 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111827;
   margin: 0;
 }
 
 .connect-wallet p, .wallet-connected p {
-  color: #6b7280;
+  opacity: 0.8;
   margin: 0;
+  line-height: 1.6;
 }
 
 .error-message {
-  padding: 0.75rem 1rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 0.5rem;
-  color: #dc2626;
+  padding: 1rem;
+  background: rgba(255, 107, 107, 0.2);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  color: #ff6b6b;
   font-size: 0.875rem;
   width: 100%;
+  backdrop-filter: blur(10px);
 }
 
 .wallet-info {
@@ -182,17 +177,19 @@ const disconnectWallet = async () => {
 
 .info-text {
   font-size: 0.875rem;
-  color: #6b7280;
+  opacity: 0.8;
 }
 
 .info-text a {
-  color: #2563eb;
+  color: white;
   text-decoration: none;
   font-weight: 500;
+  opacity: 0.9;
 }
 
 .info-text a:hover {
   text-decoration: underline;
+  opacity: 1;
 }
 
 .action-buttons {
@@ -202,64 +199,27 @@ const disconnectWallet = async () => {
   width: 100%;
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1.5rem;
-  border: 1px solid transparent;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s;
+.large {
   width: 100%;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background: #2563eb;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #1d4ed8;
-}
-
-.btn-outline {
-  border-color: #d1d5db;
-  color: #374151;
-  background: white;
-}
-
-.btn-outline:hover {
-  background: #f9fafb;
-}
-
-.btn-large {
   padding: 1rem 2rem;
   font-size: 1.125rem;
 }
 
 .login-footer {
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
   padding-top: 1.5rem;
 }
 
 .back-link {
-  color: #6b7280;
+  color: white;
   text-decoration: none;
   font-size: 0.875rem;
-  transition: color 0.2s;
+  opacity: 0.8;
+  transition: opacity 0.2s;
 }
 
 .back-link:hover {
-  color: #374151;
+  opacity: 1;
 }
 
 @media (max-width: 640px) {
@@ -269,6 +229,10 @@ const disconnectWallet = async () => {
   
   .login-card {
     padding: 2rem;
+  }
+
+  .login-title {
+    font-size: 1.5rem;
   }
 }
 </style>

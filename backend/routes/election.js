@@ -6,4 +6,14 @@ const electionController = require('../controllers/electionController');
 router.get('/', electionController.getPublicElections);
 router.get('/:id', electionController.getElectionDetails);
 
+// Public route to get election by slug
+router.get('/slug/:slug', electionController.getElectionBySlug);
+
+// Public route to get voter's wallet address by election slug and email
+router.get('/slug/:slug/wallet', electionController.getVoterWalletByEmail);
+
+// OTP routes for voting
+router.post('/slug/:slug/request-otp', electionController.requestOtp);
+router.post('/slug/:slug/verify-otp', electionController.verifyOtp);
+
 module.exports = router;

@@ -2,8 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import WalletLogin from '../views/WalletLogin.vue'
 import Elections from '../views/Elections.vue'
-import Vote from '../views/Vote.vue'
-import Admin from '../views/Admin.vue'
+import VoteSimple from '../views/VoteSimple.vue'
+import AdminSimple from '../views/AdminSimple.vue'
 import { useAuthStore } from '../stores/auth'
 
 const routes = [
@@ -23,15 +23,20 @@ const routes = [
     component: Elections
   },
   {
-    path: '/vote/:id',
-    name: 'Vote',
-    component: Vote,
+    path: '/vote/id/:id',
+    name: 'VoteById',
+    component: VoteSimple,
     props: true
+  },
+  {
+    path: '/vote/:slug',
+    name: 'Vote',
+    component: () => import('../views/Vote.vue')
   },
   {
     path: '/admin',
     name: 'Admin',
-    component: Admin,
+    component: AdminSimple,
     meta: { requiresAuth: true }
   }
 ]
