@@ -1,9 +1,18 @@
 <template>
   <div class="elections-page page-layout">
+    <!-- Animated Background -->
+    <div class="animated-bg">
+      <div class="floating-particles"></div>
+      <div class="energy-grid"></div>
+      <div class="holographic-rings"></div>
+    </div>
+
     <div class="page-content">
       <div class="container">
         <div class="elections-header animate-fade-in">
-          <h1 class="section-title">Active Elections</h1>
+          <h1 class="section-title">
+            Active <span class="title-glow">Elections</span>
+          </h1>
           <p class="section-subtitle">
             Participate in ongoing elections or view results with complete transparency and privacy
           </p>
@@ -28,11 +37,12 @@
               </svg>
               <h3 class="error-title">Failed to Load Elections</h3>
               <p class="error-message">{{ error }}</p>
-              <button @click="fetchElections" class="btn btn-primary btn-hover-lift">
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button @click="fetchElections" class="btn btn-primary btn-hover-lift btn-futuristic">
+                <div class="btn-glow-border"></div>
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
-                Try Again
+                <span class="btn-text">Try Again</span>
               </button>
             </div>
           </div>
@@ -43,11 +53,12 @@
           <!-- Demo Election -->
           <div class="demo-section animate-slide-up" style="animation-delay: 0.1s">
             <div class="demo-header">
-              <h2 class="demo-title">Experience the Future of Voting</h2>
+              <h2 class="demo-title">Experience the Future of <span class="title-glow">Voting</span></h2>
               <p class="demo-subtitle">Try our interactive demo with real voting features</p>
             </div>
             
             <div class="demo-election-card glass-container interactive-glow">
+              <div class="demo-glow-border"></div>
               <div class="demo-badge">
                 <span>INTERACTIVE DEMO</span>
               </div>
@@ -89,11 +100,12 @@
               </div>
               
               <div class="election-actions">
-                <router-link :to="`/vote/demo`" class="btn btn-primary btn-lg btn-hover-lift">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <router-link :to="`/vote/demo`" class="btn btn-primary btn-lg btn-hover-lift btn-futuristic">
+                  <div class="btn-glow-border"></div>
+                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                   </svg>
-                  Try Demo Vote
+                  <span class="btn-text">Try Demo Vote</span>
                 </router-link>
               </div>
             </div>
@@ -101,7 +113,7 @@
 
           <!-- Elections Grid -->
           <div v-if="elections.length > 0" class="elections-section">
-            <h2 class="elections-section-title">Live Elections</h2>
+            <h2 class="elections-section-title">Live <span class="title-glow">Elections</span></h2>
             <div class="elections-grid">
               <div
                 v-for="(election, index) in elections"
@@ -110,6 +122,7 @@
                 :style="`animation-delay: ${0.1 + index * 0.1}s`"
                 @click="viewElection(election._id)"
               >
+                <div class="election-glow-border"></div>
                 <div class="election-header">
                   <h3 class="election-title">{{ election.title }}</h3>
                   <span :class="getStatusClass(election.status)" class="status-badge">
@@ -138,32 +151,35 @@
                   <button
                     v-if="election.status === 'active'"
                     @click.stop="goToVote(election)"
-                    class="btn btn-primary btn-full btn-hover-lift"
+                    class="btn btn-primary btn-full btn-hover-lift btn-futuristic"
                   >
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="btn-glow-border"></div>
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                     </svg>
-                    Vote Now
+                    <span class="btn-text">Vote Now</span>
                   </button>
                   <button
                     v-else-if="election.status === 'completed'"
                     @click.stop="viewResults(election._id)"
-                    class="btn btn-outline btn-full btn-hover-lift"
+                    class="btn btn-outline btn-full btn-hover-lift btn-futuristic"
                   >
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="btn-glow-border"></div>
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                     </svg>
-                    View Results
+                    <span class="btn-text">View Results</span>
                   </button>
                   <button
                     v-else
                     disabled
-                    class="btn btn-ghost btn-full btn-disabled"
+                    class="btn btn-ghost btn-full btn-disabled btn-futuristic"
                   >
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="btn-glow-border"></div>
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    {{ election.status === 'upcoming' ? 'Coming Soon' : 'Ended' }}
+                    <span class="btn-text">{{ election.status === 'upcoming' ? 'Coming Soon' : 'Ended' }}</span>
                   </button>
                 </div>
               </div>
@@ -173,6 +189,7 @@
           <!-- Empty State -->
           <div v-else class="empty-state animate-scale">
             <div class="glass-container empty-card">
+              <div class="empty-glow-border"></div>
               <div class="empty-content">
                 <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
@@ -181,11 +198,12 @@
                 <p class="empty-description">
                   There are currently no active elections. Check back later or contact your administrator.
                 </p>
-                <button @click="fetchElections" class="btn btn-primary btn-hover-lift">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button @click="fetchElections" class="btn btn-primary btn-hover-lift btn-futuristic">
+                  <div class="btn-glow-border"></div>
+                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                   </svg>
-                  Refresh
+                  <span class="btn-text">Refresh</span>
                 </button>
               </div>
             </div>
@@ -264,18 +282,206 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Import Google Fonts for futuristic typography */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@300;400;500;600;700;800&display=swap');
+
 .elections-page {
   min-height: 100vh;
   width: 100%;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Animated Background */
+.animated-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.floating-particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, rgba(30, 211, 194, 0.3), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(207, 171, 115, 0.2), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(30, 211, 194, 0.4), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(207, 171, 115, 0.3), transparent),
+    radial-gradient(2px 2px at 160px 30px, rgba(30, 211, 194, 0.2), transparent);
+  background-repeat: repeat;
+  background-size: 200px 100px;
+  animation: float 20s linear infinite;
+}
+
+.energy-grid {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(rgba(30, 211, 194, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(207, 171, 115, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: grid-move 15s linear infinite;
+}
+
+.holographic-rings {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  border: 1px solid rgba(30, 211, 194, 0.2);
+  border-radius: 50%;
+  animation: rotate 30s linear infinite;
+}
+
+.holographic-rings::before,
+.holographic-rings::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(207, 171, 115, 0.15);
+  border-radius: 50%;
+  animation: pulse 4s ease-in-out infinite;
+}
+
+.holographic-rings::before {
+  width: 400px;
+  height: 400px;
+  animation-delay: -2s;
+}
+
+.holographic-rings::after {
+  width: 200px;
+  height: 200px;
+  animation-delay: -1s;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-100px); }
+}
+
+@keyframes grid-move {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(50px, 50px); }
+}
+
+@keyframes rotate {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
 }
 
 .page-content {
   padding: 2rem 0;
+  position: relative;
+  z-index: 1;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
 }
 
 .elections-header {
   margin-bottom: 4rem;
   text-align: center;
+}
+
+.section-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  color: var(--color-white);
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.025em;
+}
+
+.title-glow {
+  background: linear-gradient(45deg, #cfab73, rgb(30, 211, 194), #cfab73);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: glow 3s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.section-subtitle {
+  font-family: 'Exo 2', sans-serif;
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Glass Container */
+.glass-container {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(30, 211, 194, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-container:hover {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: rgba(30, 211, 194, 0.5);
+  box-shadow: 0 20px 40px rgba(30, 211, 194, 0.2);
+}
+
+/* Glow Borders */
+.demo-glow-border,
+.election-glow-border,
+.empty-glow-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 1px solid transparent;
+  border-radius: inherit;
+  background: linear-gradient(45deg, #cfab73, rgb(30, 211, 194), #cfab73) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.glass-container:hover .demo-glow-border,
+.glass-container:hover .election-glow-border,
+.glass-container:hover .empty-glow-border {
+  opacity: 0.6;
+  animation: border-glow 2s ease-in-out infinite;
+}
+
+@keyframes border-glow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 
 /* Loading State */
@@ -310,12 +516,13 @@ onMounted(() => {
 .error-icon {
   width: 4rem;
   height: 4rem;
-  color: var(--color-white);
+  color: rgb(30, 211, 194);
   margin: 0 auto 1.5rem auto;
   opacity: 0.8;
 }
 
 .error-title {
+  font-family: 'Exo 2', sans-serif;
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--color-white);
@@ -323,7 +530,8 @@ onMounted(() => {
 }
 
 .error-message {
-  color: var(--color-gray-300);
+  font-family: 'Rajdhani', sans-serif;
+  color: rgba(255, 255, 255, 0.8);
   margin-bottom: 2rem;
   line-height: 1.6;
 }
@@ -339,6 +547,7 @@ onMounted(() => {
 }
 
 .demo-title {
+  font-family: 'Orbitron', monospace;
   font-size: clamp(1.75rem, 4vw, 2.5rem);
   font-weight: 700;
   color: var(--color-white);
@@ -347,8 +556,9 @@ onMounted(() => {
 }
 
 .demo-subtitle {
+  font-family: 'Exo 2', sans-serif;
   font-size: clamp(1rem, 2.5vw, 1.25rem);
-  color: var(--color-gray-300);
+  color: rgba(255, 255, 255, 0.8);
   max-width: 600px;
   margin: 0 auto;
 }
@@ -359,26 +569,26 @@ onMounted(() => {
   padding: 3rem;
   position: relative;
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all 0.4s ease;
 }
 
 .demo-election-card:hover {
-  transform: translateY(-4px);
-  background: var(--glass-medium);
+  transform: translateY(-8px) scale(1.02);
 }
 
 .demo-badge {
   position: absolute;
   top: 1.5rem;
   right: 1.5rem;
-  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-gray-200) 100%);
+  background: linear-gradient(135deg, #cfab73, rgb(30, 211, 194));
   color: var(--color-black);
   padding: 0.5rem 1rem;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
+  font-family: 'Rajdhani', sans-serif;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.05em;
-  box-shadow: var(--shadow-glass-sm);
+  box-shadow: 0 4px 20px rgba(30, 211, 194, 0.3);
 }
 
 .demo-badge span {
@@ -394,6 +604,7 @@ onMounted(() => {
 }
 
 .elections-section-title {
+  font-family: 'Orbitron', monospace;
   font-size: clamp(1.5rem, 3vw, 2rem);
   font-weight: 600;
   color: var(--color-white);
@@ -412,12 +623,11 @@ onMounted(() => {
 .election-card {
   padding: 2rem;
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all 0.4s ease;
 }
 
 .election-card:hover {
-  transform: translateY(-4px);
-  background: var(--glass-medium);
+  transform: translateY(-8px) scale(1.02);
 }
 
 .election-header {
@@ -429,6 +639,7 @@ onMounted(() => {
 }
 
 .election-title {
+  font-family: 'Exo 2', sans-serif;
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--color-white);
@@ -438,7 +649,8 @@ onMounted(() => {
 
 .status-badge {
   padding: 0.375rem 0.75rem;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
+  font-family: 'Rajdhani', sans-serif;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -448,37 +660,38 @@ onMounted(() => {
 }
 
 .status-demo {
-  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-gray-200) 100%);
+  background: linear-gradient(135deg, #cfab73, rgb(30, 211, 194));
   color: var(--color-black);
-  border-color: var(--color-white);
+  border-color: #cfab73;
 }
 
 .status-active {
-  background: var(--glass-medium);
-  color: var(--color-white);
-  border-color: var(--color-white);
+  background: rgba(30, 211, 194, 0.2);
+  color: rgb(30, 211, 194);
+  border-color: rgb(30, 211, 194);
 }
 
 .status-completed {
-  background: var(--glass-dark);
-  color: var(--color-gray-300);
-  border-color: var(--color-gray-500);
+  background: rgba(207, 171, 115, 0.2);
+  color: #cfab73;
+  border-color: #cfab73;
 }
 
 .status-upcoming {
-  background: var(--glass-dark);
-  color: var(--color-gray-400);
-  border-color: var(--color-gray-600);
+  background: rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.6);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .status-default {
-  background: var(--glass-dark);
-  color: var(--color-gray-500);
-  border-color: var(--color-gray-600);
+  background: rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.5);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .election-description {
-  color: var(--color-gray-300);
+  font-family: 'Rajdhani', sans-serif;
+  color: rgba(255, 255, 255, 0.8);
   line-height: 1.6;
   margin-bottom: 1.5rem;
 }
@@ -492,7 +705,7 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0;
-  border-bottom: 1px solid var(--glass-light);
+  border-bottom: 1px solid rgba(30, 211, 194, 0.2);
 }
 
 .detail-row:last-child {
@@ -500,14 +713,16 @@ onMounted(() => {
 }
 
 .detail-label {
+  font-family: 'Rajdhani', sans-serif;
   font-size: 0.875rem;
-  color: var(--color-gray-400);
+  color: rgba(255, 255, 255, 0.6);
   font-weight: 500;
 }
 
 .detail-value {
+  font-family: 'Exo 2', sans-serif;
   font-size: 0.875rem;
-  color: var(--color-white);
+  color: #cfab73;
   font-weight: 600;
   text-align: right;
 }
@@ -524,15 +739,22 @@ onMounted(() => {
   align-items: center;
   gap: 0.75rem;
   padding: 1rem;
-  background: var(--glass-dark);
-  border: 1px solid var(--glass-medium);
-  border-radius: var(--radius-md);
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(30, 211, 194, 0.2);
+  border-radius: 8px;
+  font-family: 'Rajdhani', sans-serif;
   font-size: 0.875rem;
-  color: var(--color-gray-200);
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+  background: rgba(30, 211, 194, 0.1);
+  border-color: rgba(30, 211, 194, 0.4);
 }
 
 .feature-item svg {
-  color: var(--color-white);
+  color: rgb(30, 211, 194);
   flex-shrink: 0;
 }
 
@@ -550,6 +772,76 @@ onMounted(() => {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none !important;
+}
+
+/* Futuristic Buttons */
+.btn-futuristic {
+  position: relative;
+  overflow: hidden;
+  border: none;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.9));
+  color: #ffffff;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.btn-glow-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid transparent;
+  border-radius: inherit;
+  background: linear-gradient(45deg, #cfab73, rgb(30, 211, 194), #cfab73) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.btn-text {
+  position: relative;
+  z-index: 2;
+}
+
+.btn-icon {
+  position: relative;
+  z-index: 2;
+  transition: transform 0.3s ease;
+}
+
+.btn-futuristic:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(30, 211, 194, 0.4);
+}
+
+.btn-futuristic:hover .btn-glow-border {
+  opacity: 1;
+  animation: border-glow 2s ease-in-out infinite;
+}
+
+.btn-futuristic:hover .btn-icon {
+  transform: translateX(3px);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, rgba(30, 211, 194, 0.2), rgba(30, 211, 194, 0.1));
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid rgba(207, 171, 115, 0.5);
+}
+
+.btn-outline:hover {
+  background: rgba(207, 171, 115, 0.1);
 }
 
 /* Empty State */
@@ -572,11 +864,12 @@ onMounted(() => {
 .empty-icon {
   width: 4rem;
   height: 4rem;
-  color: var(--color-gray-400);
+  color: rgb(30, 211, 194);
   margin: 0 auto 1.5rem auto;
 }
 
 .empty-title {
+  font-family: 'Exo 2', sans-serif;
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--color-white);
@@ -584,7 +877,8 @@ onMounted(() => {
 }
 
 .empty-description {
-  color: var(--color-gray-300);
+  font-family: 'Rajdhani', sans-serif;
+  color: rgba(255, 255, 255, 0.8);
   margin-bottom: 2rem;
   line-height: 1.6;
 }
@@ -681,221 +975,38 @@ onMounted(() => {
 
 /* Enhanced interactions */
 .btn svg {
-  transition: transform var(--transition-normal);
+  transition: transform 0.3s ease;
 }
 
 .btn:hover svg {
-  transform: translateX(2px);
+  transform: translateX(3px);
 }
 
-/* Animation delays for staggered loading */
+/* Animation classes */
+.animate-fade-in {
+  animation: fadeIn 1s ease-out;
+}
+
 .animate-slide-up {
-  opacity: 0;
-  animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: slideUp 0.8s ease-out;
+}
+
+.animate-scale {
+  animation: scale 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.error-title {
-  color: #991b1b;
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.error-message {
-  color: #991b1b;
-  margin-bottom: 1rem;
-}
-
-/* Demo Election Styles */
-.demo-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 2rem;
-  border-radius: 1rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.demo-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  text-align: center;
-}
-
-.demo-election-card {
-  background: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  position: relative;
-  margin-top: 1rem;
-}
-
-.demo-badge {
-  position: absolute;
-  top: -0.5rem;
-  right: 1rem;
-  background: #f59e0b;
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.demo-election-card .election-title {
-  color: #111827;
-}
-
-.demo-election-card .election-description {
-  color: #6b7280;
-}
-
-.demo-election-card .detail-label {
-  color: #6b7280;
-}
-
-.demo-election-card .detail-value {
-  color: #059669;
-  font-weight: 600;
-}
-
-/* Elections Grid */
-.elections-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
-}
-
-.election-card {
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  border: 1px solid #e5e7eb;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.election-card:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
-}
-
-/* Empty State */
-.empty-state {
-  display: flex;
-  justify-content: center;
-  padding: 3rem;
-}
-
-.empty-card {
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 3rem;
-  text-align: center;
-  max-width: 24rem;
-  border: 1px solid #e5e7eb;
-}
-
-.empty-icon {
-  width: 4rem;
-  height: 4rem;
-  color: #9ca3af;
-  margin: 0 auto 1rem auto;
-}
-
-.empty-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 0.5rem;
-}
-
-.empty-description {
-  color: #6b7280;
-  margin-bottom: 1.5rem;
-  line-height: 1.5;
-}
-
-/* Buttons */
-.btn {
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-weight: 500;
-  text-align: center;
-  transition: all 0.2s;
-  border: none;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background-color: #2563eb;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: #1d4ed8;
-}
-
-.btn-secondary {
-  background-color: #10b981;
-  color: white;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: #059669;
-}
-
-.btn-outline {
-  border: 1px solid #d1d5db;
-  color: #6b7280;
-  background: transparent;
-}
-
-.btn-full {
-  width: 100%;
-}
-
-.btn-disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .elections-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .election-header {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .election-actions {
-    flex-direction: column;
-  }
+@keyframes scale {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
 }
 </style>
