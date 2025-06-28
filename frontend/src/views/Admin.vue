@@ -1,25 +1,37 @@
 <template>
-  <div class="admin-page">
+  <div class="admin-page page-layout">
+    <!-- Animated Background -->
+    <div class="animated-bg">
+      <div class="floating-particles"></div>
+      <div class="energy-grid"></div>
+      <div class="holographic-rings"></div>
+    </div>
+
     <div class="admin-container">
       <!-- Header -->
       <div class="glass-container header-container">
         <div class="header-content">
-          <h1 class="page-title">Election Administration</h1>
+          <h1 class="page-title">
+            Election <span class="title-glow">Administration</span>
+          </h1>
           <p class="page-description">Create and manage secure, decentralized elections</p>
         </div>
         <div class="wallet-section">
           <button 
             v-if="!isWalletConnected" 
             @click="connectWallet" 
-            class="glass-btn primary"
+            class="btn btn-primary btn-futuristic"
             :disabled="authStore.loading"
           >
-            {{ authStore.loading ? 'Connecting...' : 'Connect Wallet' }}
+            <div class="btn-glow-border"></div>
+            <span v-if="authStore.loading" class="loading-spinner loading-spinner-sm"></span>
+            <span class="btn-text">{{ authStore.loading ? 'Connecting...' : 'Connect Wallet' }}</span>
           </button>
           <div v-else class="wallet-info">
             <div class="wallet-address">{{ truncatedAddress }}</div>
-            <button @click="disconnectWallet" class="glass-btn outline">
-              Disconnect
+            <button @click="disconnectWallet" class="btn btn-outline btn-futuristic">
+              <div class="btn-glow-border"></div>
+              <span class="btn-text">Disconnect</span>
             </button>
           </div>
         </div>
@@ -28,13 +40,16 @@
       <!-- Main Content -->
       <div v-if="!isWalletConnected" class="wallet-prompt">
         <div class="glass-container prompt-card">
-          <svg class="prompt-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 0h10a2 2 0 002-2v-3a2 2 0 00-2-2H9a2 2 0 00-2 2v3a2 2 0 002 2z"/>
-          </svg>
-          <h2>Connect Your Wallet</h2>
-          <p>To create and manage elections, please connect your Aptos wallet (e.g., Petra Wallet)</p>
-          <button @click="connectWallet" class="glass-btn primary large">
-            Connect Wallet
+          <div class="prompt-icon-container">
+            <svg class="prompt-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 0h10a2 2 0 002-2v-3a2 2 0 00-2-2H9a2 2 0 00-2 2v3a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <h2 class="prompt-title">Connect Your Wallet</h2>
+          <p class="prompt-description">To create and manage elections, please connect your Aptos wallet (e.g., Petra Wallet)</p>
+          <button @click="connectWallet" class="btn btn-primary btn-lg btn-futuristic">
+            <div class="btn-glow-border"></div>
+            <span class="btn-text">Connect Wallet</span>
           </button>
         </div>
       </div>
@@ -48,13 +63,15 @@
               @click="activeTab = 'create'" 
               :class="['glass-tab', { active: activeTab === 'create' }]"
             >
-              Create Election
+              <div class="tab-glow-border"></div>
+              <span class="tab-text">Create Election</span>
             </button>
             <button 
               @click="activeTab = 'manage'" 
               :class="['glass-tab', { active: activeTab === 'manage' }]"
             >
-              Manage Elections
+              <div class="tab-glow-border"></div>
+              <span class="tab-text">Manage Elections</span>
             </button>
           </div>
         </div>
@@ -62,14 +79,14 @@
         <!-- Create Election Tab -->
         <div v-if="activeTab === 'create'" class="glass-container tab-content">
           <div class="create-election-form">
-            <h2>Create New Election</h2>
+            <h2 class="form-title">Create New <span class="title-glow">Election</span></h2>
             
             <!-- Step 1: Election Details -->
             <div class="glass-card form-section">
-              <h3>Election Details</h3>
+              <h3 class="section-title">Election Details</h3>
               <div class="form-grid">
                 <div class="form-group">
-                  <label>Election Title</label>
+                  <label class="form-label">Election Title</label>
                   <input 
                     v-model="electionForm.title" 
                     type="text" 
@@ -78,7 +95,7 @@
                   />
                 </div>
                 <div class="form-group">
-                  <label>Organization</label>
+                  <label class="form-label">Organization</label>
                   <input 
                     v-model="electionForm.organization" 
                     type="text" 
@@ -87,7 +104,7 @@
                   />
                 </div>
                 <div class="form-group">
-                  <label>Description</label>
+                  <label class="form-label">Description</label>
                   <textarea 
                     v-model="electionForm.description" 
                     placeholder="Brief description of the election"
@@ -95,7 +112,7 @@
                   ></textarea>
                 </div>
                 <div class="form-group">
-                  <label>Start Date</label>
+                  <label class="form-label">Start Date</label>
                   <input 
                     v-model="electionForm.startDate" 
                     type="datetime-local" 
@@ -103,7 +120,7 @@
                   />
                 </div>
                 <div class="form-group">
-                  <label>Voting Deadline</label>
+                  <label class="form-label">Voting Deadline</label>
                   <input 
                     v-model="electionForm.deadline" 
                     type="datetime-local" 
@@ -114,7 +131,7 @@
               
               <!-- Election Options -->
               <div class="form-options">
-                <h4>Election Options</h4>
+                <h4 class="options-title">Election Options</h4>
                 <div class="checkbox-group">
                   <label class="glass-checkbox">
                     <input 
@@ -147,28 +164,30 @@
             <!-- Step 2: Positions and Candidates -->
             <div class="glass-card form-section">
               <div class="section-header">
-                <h3>Positions & Candidates</h3>
-                <button @click="addPosition" type="button" class="glass-btn outline">
-                  + Add Position
+                <h3 class="section-title">Positions & Candidates</h3>
+                <button @click="addPosition" type="button" class="btn btn-outline btn-futuristic">
+                  <div class="btn-glow-border"></div>
+                  <span class="btn-text">+ Add Position</span>
                 </button>
               </div>
 
               <div v-for="(position, posIndex) in electionForm.positions" :key="posIndex" class="glass-card position-card">
                 <div class="position-header">
-                  <h4>Position {{ posIndex + 1 }}</h4>
+                  <h4 class="position-title">Position {{ posIndex + 1 }}</h4>
                   <button 
                     v-if="electionForm.positions.length > 1"
                     @click="removePosition(posIndex)" 
                     type="button" 
-                    class="glass-btn danger"
+                    class="btn btn-danger btn-futuristic"
                   >
-                    Remove
+                    <div class="btn-glow-border"></div>
+                    <span class="btn-text">Remove</span>
                   </button>
                 </div>
 
                 <div class="form-grid">
                   <div class="form-group">
-                    <label>Position Title</label>
+                    <label class="form-label">Position Title</label>
                     <input 
                       v-model="position.title" 
                       type="text" 
@@ -177,7 +196,7 @@
                     />
                   </div>
                   <div class="form-group">
-                    <label>Position Description</label>
+                    <label class="form-label">Position Description</label>
                     <textarea 
                       v-model="position.description" 
                       placeholder="Role responsibilities and requirements"
@@ -185,7 +204,7 @@
                     ></textarea>
                   </div>
                   <div class="form-group">
-                    <label>Maximum Selections</label>
+                    <label class="form-label">Maximum Selections</label>
                     <select v-model="position.maxSelections" class="glass-select">
                       <option value="1">1 (Single choice)</option>
                       <option value="2">2 (Up to 2 choices)</option>
@@ -197,32 +216,34 @@
                 <!-- Candidates for this position -->
                 <div class="candidates-section">
                   <div class="candidates-header">
-                    <h5>Candidates</h5>
+                    <h5 class="candidates-title">Candidates</h5>
                     <button 
                       @click="addCandidate(posIndex)" 
                       type="button" 
-                      class="glass-btn outline"
+                      class="btn btn-outline btn-futuristic"
                     >
-                      + Add Candidate
+                      <div class="btn-glow-border"></div>
+                      <span class="btn-text">+ Add Candidate</span>
                     </button>
                   </div>
 
                   <div v-for="(candidate, candIndex) in position.candidates" :key="candIndex" class="glass-card candidate-card">
                     <div class="candidate-header">
-                      <span>Candidate {{ candIndex + 1 }}</span>
+                      <span class="candidate-label">Candidate {{ candIndex + 1 }}</span>
                       <button 
                         v-if="position.candidates.length > 1"
                         @click="removeCandidate(posIndex, candIndex)" 
                         type="button" 
-                        class="glass-btn danger small"
+                        class="btn btn-danger btn-sm btn-futuristic"
                       >
-                        Remove
+                        <div class="btn-glow-border"></div>
+                        <span class="btn-text">Remove</span>
                       </button>
                     </div>
 
                     <div class="form-grid">
                       <div class="form-group">
-                        <label>Name</label>
+                        <label class="form-label">Name</label>
                         <input 
                           v-model="candidate.name" 
                           type="text" 
@@ -231,7 +252,7 @@
                         />
                       </div>
                       <div class="form-group">
-                        <label>Party/Affiliation</label>
+                        <label class="form-label">Party/Affiliation</label>
                         <input 
                           v-model="candidate.party" 
                           type="text" 
@@ -240,7 +261,7 @@
                         />
                       </div>
                       <div class="form-group">
-                        <label>Description</label>
+                        <label class="form-label">Description</label>
                         <textarea 
                           v-model="candidate.description" 
                           placeholder="Brief background and platform"
@@ -248,7 +269,7 @@
                         ></textarea>
                       </div>
                       <div class="form-group">
-                        <label>Qualifications</label>
+                        <label class="form-label">Qualifications</label>
                         <textarea 
                           v-model="candidate.qualifications" 
                           placeholder="Education, experience, achievements"
@@ -256,7 +277,7 @@
                         ></textarea>
                       </div>
                       <div class="form-group">
-                        <label>Image URL (optional)</label>
+                        <label class="form-label">Image URL (optional)</label>
                         <input 
                           v-model="candidate.imageUrl" 
                           type="url" 
@@ -271,7 +292,7 @@
             </div>
             <!-- Step 3: Voter List -->
             <div class="glass-card form-section">
-              <h3>Eligible Voters</h3>
+              <h3 class="section-title">Eligible Voters</h3>
               <div class="upload-section">
                 <div class="glass-upload-area" @drop="handleFileDrop" @dragover.prevent @dragenter.prevent>
                   <input 
@@ -282,9 +303,11 @@
                     style="display: none"
                   />
                   <div class="upload-content">
-                    <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                    </svg>
+                    <div class="upload-icon-container">
+                      <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                      </svg>
+                    </div>
                     <p v-if="!voterFile" class="upload-text">
                       <strong>Click to upload</strong> or drag and drop<br>
                       CSV or JSON file with voter emails
@@ -293,14 +316,15 @@
                       {{ voterFile.name }} ({{ voterEmails.length }} emails)
                     </p>
                   </div>
-                  <button @click="$refs.fileInput.click()" class="glass-btn outline">
-                    Choose File
+                  <button @click="$refs.fileInput.click()" class="btn btn-outline btn-futuristic">
+                    <div class="btn-glow-border"></div>
+                    <span class="btn-text">Choose File</span>
                   </button>
                 </div>
                 
                 <!-- Voter Preview -->
                 <div v-if="voterEmails.length > 0" class="glass-card voter-preview">
-                  <h4>Voter List Preview ({{ voterEmails.length }} voters)</h4>
+                  <h4 class="preview-title">Voter List Preview ({{ voterEmails.length }} voters)</h4>
                   <div class="email-list">
                     <div v-for="email in voterEmails.slice(0, 10)" :key="email" class="email-item">
                       {{ email }}
@@ -318,9 +342,11 @@
               <button 
                 @click="createElection" 
                 :disabled="!canCreateElection || creatingElection"
-                class="glass-btn primary large"
+                class="btn btn-primary btn-xl btn-futuristic"
               >
-                {{ creatingElection ? 'Creating Election...' : 'Create Election' }}
+                <div class="btn-glow-border"></div>
+                <span v-if="creatingElection" class="loading-spinner loading-spinner-sm"></span>
+                <span class="btn-text">{{ creatingElection ? 'Creating Election...' : 'Create Election' }}</span>
               </button>
             </div>
           </div>
@@ -329,22 +355,34 @@
         <!-- Manage Elections Tab -->
         <div v-if="activeTab === 'manage'" class="glass-container tab-content">
           <div class="elections-list">
-            <h2>Your Elections</h2>
+            <h2 class="list-title">Your <span class="title-glow">Elections</span></h2>
             <div v-if="elections.length === 0" class="glass-card empty-state">
-              <p>No elections created yet. Create your first election to get started!</p>
+              <div class="empty-icon-container">
+                <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <p class="empty-text">No elections created yet. Create your first election to get started!</p>
             </div>
             <div v-else class="elections-grid">
               <div v-for="election in elections" :key="election.id" class="glass-card election-card">
-                <h3>{{ election.name }}</h3>
-                <p>{{ election.description }}</p>
+                <div class="election-glow-border"></div>
+                <h3 class="election-name">{{ election.name }}</h3>
+                <p class="election-description">{{ election.description }}</p>
                 <div class="election-meta">
-                  <span>Deadline: {{ formatDate(election.deadline) }}</span>
-                  <span>Voters: {{ election.voterCount }}</span>
+                  <span class="meta-item">Deadline: {{ formatDate(election.deadline) }}</span>
+                  <span class="meta-item">Voters: {{ election.voterCount }}</span>
                   <span :class="['status', election.status]">{{ election.status }}</span>
                 </div>
                 <div class="election-actions">
-                  <button class="glass-btn outline">View Results</button>
-                  <button class="glass-btn primary">Manage</button>
+                  <button class="btn btn-outline btn-futuristic">
+                    <div class="btn-glow-border"></div>
+                    <span class="btn-text">View Results</span>
+                  </button>
+                  <button class="btn btn-primary btn-futuristic">
+                    <div class="btn-glow-border"></div>
+                    <span class="btn-text">Manage</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -704,7 +742,7 @@ onMounted(async () => {
   padding: 3rem;
 }
 
-.prompt-icon {
+.prompt-icon-container {
   width: 4rem;
   height: 4rem;
   margin: 0 auto 1.5rem auto;
@@ -977,7 +1015,7 @@ onMounted(async () => {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.upload-icon {
+.upload-icon-container {
   width: 3rem;
   height: 3rem;
   margin: 0 auto 1rem auto;
