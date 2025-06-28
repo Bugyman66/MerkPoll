@@ -8,6 +8,7 @@ const verifyToken = require('../middlewares/verifyToken');
 // Admin authentication
 router.post('/login', authController.login);
 router.get('/profile', verifyToken, authController.getProfile);
+router.post('/relayer/refresh-balance', verifyToken, authController.refreshRelayerBalance);
 
 // Election management
 router.post('/elections', verifyToken, electionController.createElection);

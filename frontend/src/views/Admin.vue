@@ -81,6 +81,9 @@
           <div class="create-election-form">
             <h2 class="form-title">Create New <span class="title-glow">Election</span></h2>
             
+            <!-- Relayer Wallet Information -->
+            <ElectionRelayerWallet />
+            
             <!-- Step 1: Election Details -->
             <div class="glass-card form-section">
               <h3 class="section-title">Election Details</h3>
@@ -398,6 +401,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import axios from 'axios'
+import '../styles/admin.css'
+import ElectionRelayerWallet from '../components/ElectionRelayerWallet.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -675,6 +680,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+<<<<<<< HEAD
 .admin-page {
   min-height: 100vh;
   padding: 2rem 1rem;
@@ -1215,4 +1221,7 @@ onMounted(async () => {
     padding: 1rem;
   }
 }
+=======
+/* All styles are imported from ../styles/admin.css */
+>>>>>>> ce7be8814ea8dc775e71a8266b8c0f0fafd21583
 </style>
