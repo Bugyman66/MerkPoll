@@ -11,7 +11,8 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated: false,
     loading: false,
     error: null,
-    isAdmin: false
+    isAdmin: false,
+    relayerWallet: null
   }),
 
   getters: {
@@ -20,6 +21,16 @@ export const useAuthStore = defineStore('auth', {
     truncatedAddress: (state) => {
       if (!state.walletAddress) return ''
       return `${state.walletAddress.slice(0, 6)}...${state.walletAddress.slice(-4)}`
+    },
+    truncatedRelayerAddress: (state) => {
+      if (!state.relayerWallet?.address) return ''
+      return `${state.relayerWallet.address.slice(0, 6)}...${state.relayerWallet.address.slice(-4)}`
+    },
+    isRelayerWalletFunded: (state) => {
+      return state.relayerWallet?.isFunded || false
+    },
+    relayerWalletBalance: (state) => {
+      return state.relayerWallet?.balance || '0'
     }
   },
 
@@ -50,6 +61,7 @@ export const useAuthStore = defineStore('auth', {
             })
             
             this.user = authResponse.data.user
+            this.relayerWallet = authResponse.data.user.relayerWallet
             this.isAuthenticated = true
             this.isAdmin = true
             
@@ -80,6 +92,7 @@ export const useAuthStore = defineStore('auth', {
         })
         
         this.user = authResponse.data.user
+        this.relayerWallet = authResponse.data.user.relayerWallet
         this.isAuthenticated = true
         this.isAdmin = true
         
@@ -122,6 +135,7 @@ export const useAuthStore = defineStore('auth', {
       
       this.user = null
       this.walletAddress = null
+      this.relayerWallet = null
       this.isAuthenticated = false
       this.isAdmin = false
       
@@ -150,6 +164,7 @@ export const useAuthStore = defineStore('auth', {
             try {
               const response = await axios.get(`${API_BASE_URL}/admin/profile`)
               this.user = response.data.user
+              this.relayerWallet = response.data.user.relayerWallet
             } catch (error) {
               console.warn('Token expired, clearing auth state')
               this.disconnectWallet()
@@ -174,6 +189,30 @@ export const useAuthStore = defineStore('auth', {
         return !!account
       } catch (error) {
         return false
+      }
+    },
+
+    // Refresh relayer wallet balance
+    async refreshRelayerBalance() {
+      this.loading = true
+      this.error = null
+      
+      try {
+        const response = await axios.post(`${API_BASE_URL}/admin/relayer/refresh-balance`)
+        this.relayerWallet = response.data.relayerWallet
+        
+        // Also update user object
+        if (this.user) {
+          this.user.relayerWallet = response.data.relayerWallet
+        }
+        
+        return response.data
+      } catch (error) {
+        console.error('Failed to refresh relayer balance:', error)
+        this.error = error.response?.data?.message || 'Failed to refresh balance'
+        throw error
+      } finally {
+        this.loading = false
       }
     }
   }
