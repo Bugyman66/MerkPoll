@@ -2,7 +2,7 @@
   <div class="relayer-wallet-section">
     <!-- Debug: Test if component loads -->
     <div style="background: red; color: white; padding: 1rem; margin: 1rem 0;">
-      <h3>🔍 DEBUG: ElectionRelayerWallet Component Loaded!</h3>
+      <h3> DEBUG: ElectionRelayerWallet Component Loaded!</h3>
       <p>Loading: {{ loading }}</p>
       <p>Error: {{ error }}</p>
       <p>RelayerWallet: {{ relayerWallet ? 'EXISTS' : 'NULL' }}</p>
