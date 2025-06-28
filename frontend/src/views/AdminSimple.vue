@@ -56,6 +56,11 @@
                 <p class="form-subtitle">Set up a comprehensive election with multiple positions and candidates</p>
               </div>
               
+              <!-- Relayer Wallet Information -->
+              <div class="form-section">
+                <ElectionRelayerWallet />
+              </div>
+              
               <!-- Basic Election Info -->
               <div class="form-section">
                 <h3 class="section-header">
@@ -728,6 +733,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import axios from 'axios'
+import ElectionRelayerWallet from '../components/ElectionRelayerWallet.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
